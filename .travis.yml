@@ -1,0 +1,25 @@
+sudo: required
+services:
+ - docker 
+
+before_install:
+ - docker build -t akshay008/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+ - docker run akshay008/react-test npm test -- --coverage
+
+after_success:
+ - docker build -t akshay008/multi-client ./client
+ - docker build -t akshay008/multi-nginx ./nginx
+ - docker build -t akshay008/multi-server ./server
+ - docker build -t akshay008/multi-worker ./worker
+
+ #login to docker cli 
+ - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+ #take those images and push docker hub
+ - docker push akshay008/multi-client
+ - docker push akshay008/multi-nginx
+ - docker push akshay008/multi-server
+ - docker push akshay008/multi-worker
+
+
